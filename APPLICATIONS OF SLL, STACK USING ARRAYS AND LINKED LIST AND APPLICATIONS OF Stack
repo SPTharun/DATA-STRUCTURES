@@ -1,0 +1,391 @@
+Week 3 - Applications of Singly Linked List (Polynomial Manipulation)
+DATE : 14.4.2024
+#include <stdio.h>
+#include <stdlib.h>
+
+struct Term {
+ int coefficient;
+ int exponent;
+ struct Term *next;
+};
+typedef struct Term Term;
+
+Term *createTerm(int coeff, int exp) {
+ Term *newTerm = (Term *)malloc(sizeof(Term));
+ if (newTerm == NULL) {
+ printf("Memory allocation failed\n");
+ exit(1);
+ }
+ newTerm->coefficient = coeff;
+ newTerm->exponent = exp;
+ newTerm->next = NULL;
+ return newTerm;
+}
+
+void insertTerm(Term **poly, int coeff, int exp) {
+ Term *newTerm = createTerm(coeff, exp);
+ if (*poly == NULL) {
+ *poly = newTerm;
+ } else {
+ Term *temp = *poly;
+ while (temp->next != NULL) {
+ temp = temp->next;
+ }
+ temp->next = newTerm;
+ }
+}
+
+void displayPolynomial(Term *poly) {
+ if (poly == NULL) {
+ printf("Polynomial is empty\n");
+ } else {
+ while (poly != NULL) {
+ printf("(%dx^%d) ", poly->coefficient, poly->exponent);
+ poly = poly->next;
+ if (poly != NULL) {
+ printf("+ ");
+ }
+ }
+ printf("\n");
+ }
+}
+
+Term *addPolynomials(Term *poly1, Term *poly2) {
+ Term *result = NULL;
+ while (poly1 != NULL && poly2 != NULL) {
+ if (poly1->exponent > poly2->exponent) {
+ insertTerm(&result, poly1->coefficient, poly1->exponent);
+ poly1 = poly1->next;
+} else if (poly1->exponent < poly2->exponent) {
+ insertTerm(&result, poly2->coefficient, poly2->exponent);
+ poly2 = poly2->next;
+ } else {
+ insertTerm(&result, poly1->coefficient + poly2->coefficient, poly1->exponent);
+ poly1 = poly1->next;
+ poly2 = poly2->next;
+ }
+ }
+ while (poly1 != NULL) {
+ insertTerm(&result, poly1->coefficient, poly1->exponent);
+ poly1 = poly1->next;
+ }
+ while (poly2 != NULL) {
+ insertTerm(&result, poly2->coefficient, poly2->exponent);
+ poly2 = poly2->next;
+ }
+ return result;
+}
+
+Term *subtractPolynomials(Term *poly1, Term *poly2) {
+ Term *result = NULL;
+ while (poly1 != NULL && poly2 != NULL) {
+ if (poly1->exponent > poly2->exponent) {
+ insertTerm(&result, poly1->coefficient, poly1->exponent);
+ poly1 = poly1->next;
+ } else if (poly1->exponent < poly2->exponent) {
+ insertTerm(&result, -poly2->coefficient, poly2->exponent);
+ poly2 = poly2->next;
+ } else {
+ insertTerm(&result, poly1->coefficient - poly2->coefficient, poly1->exponent);
+ poly1 = poly1->next;
+ poly2 = poly2->next;
+ }
+ }
+ while (poly1 != NULL) {
+ insertTerm(&result, poly1->coefficient, poly1->exponent);
+ poly1 = poly1->next;
+ }
+ while (poly2 != NULL) {
+ insertTerm(&result, -poly2->coefficient, poly2->exponent);
+ poly2 = poly2->next;
+ }
+ return result;
+}
+
+Term *multiplyPolynomials(Term *poly1, Term *poly2) {
+ Term *result = NULL;
+ Term *temp1 = poly1;
+ while (temp1 != NULL) {
+ Term *temp2 = poly2;
+ while (temp2 != NULL) {
+ insertTerm(&result, temp1->coefficient * temp2->coefficient, temp1->exponent + temp2->exponent);
+temp2 = temp2->next;
+ }
+ temp1 = temp1->next;
+ }
+ return result;
+}
+
+int main() {
+ Term *poly1 = NULL;
+ Term *poly2 = NULL;
+ 
+ insertTerm(&poly1, 5, 2);
+ insertTerm(&poly1, -3, 1);
+ insertTerm(&poly1, 2, 0);
+ 
+ insertTerm(&poly2, 4, 3);
+ insertTerm(&poly2, 2, 1);
+ printf("Polynomial 1: ");
+ displayPolynomial(poly1);
+ printf("Polynomial 2: ");
+ displayPolynomial(poly2);
+ Term *sum = addPolynomials(poly1, poly2);
+ printf("Sum: ");
+ displayPolynomial(sum);
+ Term *difference = subtractPolynomials(poly1, poly2);
+ printf("Difference: ");
+ displayPolynomial(difference);
+ Term *product = multiplyPolynomials(poly1, poly2);
+ printf("Product: ");
+ displayPolynomial(product);
+ return 0;
+}
+Output
+Polynomial 1: (5x^2) + (-3x^1) + (2x^0) 
+Polynomial 2: (4x^3) + (2x^1) 
+Sum: (4x^3) + (5x^2) + (-1x^1) + (2x^0) 
+Difference: (-4x^3) + (5x^2) + (-5x^1) + (2x^0) 
+Product: (20x^5) + (10x^3) + (-12x^4) + (-6x^2) + (8x^3) + (4x^1)
+ 
+Week 4 - Implementation of Stack using Array and Linked List implementation
+DATE : 16.04.2024
+#include <stdio.h>
+#include <stdlib.h>
+
+struct Node {
+ int data;
+ struct Node* next;
+};
+
+struct StackLL {
+ struct Node* top;
+};
+
+struct StackArray {
+ int* array;
+ int top;
+ int capacity;
+};
+
+struct StackLL* createStackLL() {
+ struct StackLL* stack = (struct StackLL*)malloc(sizeof(struct StackLL));
+ stack->top = NULL;
+ return stack;
+}
+
+struct StackArray* createStackArray(int capacity) {
+ struct StackArray* stack = (struct StackArray*)malloc(sizeof(struct StackArray));
+ stack->capacity = capacity;
+ stack->top = -1;
+ stack->array = (int*)malloc(stack->capacity * sizeof(int));
+ return stack;
+}
+
+int isEmptyLL(struct StackLL* stack) {
+ return stack->top == NULL;
+}
+
+int isEmptyArray(struct StackArray* stack) {
+ return stack->top == -1;
+}
+
+void pushLL(struct StackLL* stack, int data) {
+ struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
+ newNode->data = data;
+ newNode->next = stack->top;
+ stack->top = newNode;
+}
+
+void pushArray(struct StackArray* stack, int data) {
+ if (stack->top == stack->capacity - 1) {
+ printf("Stack Overflow\n");
+ return;
+ }
+ stack->array[++stack->top] = data;
+}
+
+int popLL(struct StackLL* stack) {
+ if (isEmptyLL(stack)) {
+ printf("Stack Underflow\n");
+ return -1;
+ }
+ struct Node* temp = stack->top;
+ int data = temp->data;
+ stack->top = stack->top->next;
+ free(temp);
+ return data;
+}
+
+int popArray(struct StackArray* stack) {
+ if (isEmptyArray(stack)) {
+ printf("Stack Underflow\n");
+ return -1;
+ }
+ return stack->array[stack->top--];
+}
+
+int peekLL(struct StackLL* stack) {
+ if (isEmptyLL(stack)) {
+ printf("Stack is empty\n");
+ return -1;
+ }
+ return stack->top->data;
+}
+
+int peekArray(struct StackArray* stack) {
+ if (isEmptyArray(stack)) {
+ printf("Stack is empty\n");
+ return -1;
+ }
+ return stack->array[stack->top];
+}
+
+void displayLL(struct StackLL* stack) {
+ if (isEmptyLL(stack)) {
+ printf("Stack is empty\n");
+ return;
+ }
+ struct Node* temp = stack->top;
+ printf("Elements in stack: ");
+ while (temp != NULL) {
+ printf("%d ", temp->data);
+ temp = temp->next;
+ }
+ printf("\n");
+}
+
+void displayArray(struct StackArray* stack) {
+ if (isEmptyArray(stack)) {
+ printf("Stack is empty\n");
+ return;
+ }
+ printf("Elements in stack: ");
+ for (int i = stack->top; i >= 0; i--) {
+ printf("%d ", stack->array[i]);
+ }
+ printf("\n");
+}
+int main() {
+ // Test linked list implementation
+ struct StackLL* stackLL = createStackLL();
+ pushLL(stackLL, 1);
+ pushLL(stackLL, 2);
+ pushLL(stackLL, 3);
+ displayLL(stackLL);
+ printf("Top element: %d\n", peekLL(stackLL));
+ printf("Popped element: %d\n", popLL(stackLL));
+ displayLL(stackLL);
+ 
+ struct StackArray* stackArray = createStackArray(5);
+ pushArray(stackArray, 4);
+ pushArray(stackArray, 5);
+ pushArray(stackArray, 6);
+ displayArray(stackArray);
+ printf("Top element: %d\n", peekArray(stackArray));
+ printf("Popped element: %d\n", popArray(stackArray));
+ displayArray(stackArray);
+ return 0;
+}
+Output
+Elements in stack: 3 2 1 
+Top element: 3
+Popped element: 3
+Elements in stack: 2 1 
+Elements in stack: 6 5 4 
+Top element: 6
+Popped element: 6
+Elements in stack: 5 4  
+WEEK 5 - Applications of Stack (Infix to Postfix)
+DATE: 18.04.2024
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+#define MAX_SIZE 100
+
+struct Stack {
+ int top;
+ unsigned capacity;
+ char *array;
+};
+
+struct Stack* createStack(unsigned capacity) {
+ struct Stack* stack = (struct Stack*) malloc(sizeof(struct Stack));
+ stack->capacity = capacity;
+ stack->top = -1;
+ stack->array = (char*) malloc(stack->capacity * sizeof(char));
+ return stack;
+}
+
+int isFull(struct Stack* stack) {
+ return stack->top == stack->capacity - 1;
+}
+
+int isEmpty(struct Stack* stack) {
+ return stack->top == -1;
+}
+
+void push(struct Stack* stack, char item) {
+ if (isFull(stack))
+ return;
+ stack->array[++stack->top] = item;
+}
+
+char pop(struct Stack* stack) {
+ if (isEmpty(stack))
+ return '\0';
+ return stack->array[stack->top--];
+}
+
+int precedence(char op) {
+ if (op == '+' || op == '-')
+ return 1;
+ else if (op == '*' || op == '/')
+ return 2;
+ else
+ return -1;
+}
+
+void infixToPostfix(char* infix, char* postfix) {
+ struct Stack* stack = createStack(strlen(infix));
+ int i, j;
+ for (i = 0, j = -1; infix[i]; ++i) {
+if (isalnum(infix[i]))
+ postfix[++j] = infix[i];
+ else if (infix[i] == '(')
+ push(stack, '(');
+ else if (infix[i] == ')') {
+ while (!isEmpty(stack) && stack->array[stack->top] != '(')
+ postfix[++j] = pop(stack);
+ if (!isEmpty(stack) && stack->array[stack->top] != '(')
+ return; 
+ else
+ pop(stack);
+ } else {
+     
+while (!isEmpty(stack) && precedence(infix[i]) <= precedence(stack->array->top))
+
+
+ postfix[++j] = pop(stack);
+ push(stack, infix[i]);
+ }
+ }
+ while (!isEmpty(stack))
+ postfix[++j] = pop(stack);
+ postfix[++j] = '\0';
+}
+
+int main() {
+ char infix[MAX_SIZE];
+ char postfix[MAX_SIZE];
+ printf("Enter an infix expression: ");
+ fgets(infix, MAX_SIZE, stdin);
+ infix[strcspn(infix, "\n")] = 0;
+ infixToPostfix(infix, postfix);
+ printf("Postfix expression: %s\n", postfix);
+ return 0;
+}
+Output
+Enter the infixt expression:((a+b)*(c+d)*(e/f)*
+Postfix expression is:ab+cd+*ef/*g^
